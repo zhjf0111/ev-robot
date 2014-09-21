@@ -369,3 +369,30 @@ COMMAND		find_max(COMMAND *cmd)
 	}
 	return result;
 }
+
+STATUS		initial_map(MAP *map)
+{
+	map->width = MAP_HORIZON;
+	map->height = MAP_VERTICAL;
+	map->grid[MAP_HORIZON][MAP_VERTICAL] = { VACANT };
+}
+
+STATUS		update_map(int sensor[OBS_SENSOR], MAP* map)
+{
+	int width, height, index;
+	float radius;
+	float detect_vision;
+	int w, h, arc;
+
+	initial_map(map);
+
+	detect_vision = 15.0 /180.0 * PI;
+	for(index=0; index<OBS_SENSOR; index++)
+	{
+		width = sensor[index] / GRID_WIDTH;
+		height = sensor[index] / GRID_HEIGHT;
+		arc = sensor[index] * detect_vision;
+	}
+		
+
+}

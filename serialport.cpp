@@ -19,7 +19,7 @@ int openserial(char port[], int speed, int databits, int parity, int stopbits )
     printf("%s",ttyname(fd));
     printf(" succesfully\n");
     set_speed(fd, speed);
-    set_Parity(fd, databits, parity, stopbits);
+    set_Parity(fd, databits, parity, stopbits); 
     return fd;
   }  
 }

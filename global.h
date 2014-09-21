@@ -9,6 +9,7 @@
 extern 			pthread_mutex_t 	m;					//sych mutex
 extern volatile int					sensor_frame[15]; 	//sensor data
 extern volatile STATUS 				frame_update;		//sensor data finish flag
+extern volatile MAP					map;				//obstacle distribute map
 
 
 extern volatile int 	test;
