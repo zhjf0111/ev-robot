@@ -13,13 +13,15 @@ int main()
 
 	pthread_t t1;
     pthread_t t2;
-	
+
+	initial_map(&map);	
+	/*
     pthread_create(&t1,NULL,data_decode,NULL);
     pthread_create(&t2,NULL,processB,NULL);
   //  pthread_join(t1, NULL);
     pthread_join(t1, NULL);
     pthread_join(t1,NULL);
-
+*/
 	/*
 	while(1)
   	{

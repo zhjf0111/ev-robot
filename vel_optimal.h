@@ -2,7 +2,9 @@
 #define	__VEL_OPTIMAL_H__
 
 #include "stdio.h"
+//#include "map"
 
+//using namespace std;
 //#define		DEBUG				1
 
 /* control parameter define */
@@ -62,15 +64,17 @@ extern  OBSTACLE obs[OBS_SENSOR];
 #define 	GRID_WIDTH			100 		//milimeter
 #define 	GRID_HEIGHT			100 		//milimeter
 
-#define 	MAP_HORIZON 		60
-#define 	MAP_VERTICAL		30
+#define 	MAP_HORIZON 		6000/GRID_WIDTH
+#define 	MAP_VERTICAL		3000/GRID_HEIGHT
 
 typedef enum{VACANT = 0, OCCUPIED = 1}GRID;
 typedef struct 
 {
-	int width;
-	int height;
-	GRID grid[MAP_HORIZON][MAP_VERTICAL];
+	int 			width;
+	int 			height;
+	GRID 			grid[MAP_VERTICAL][MAP_HORIZON];
+	int 			grid_center[MAP_VERTICAL][MAP_HORIZON];
+
 }MAP;
 
 
@@ -81,6 +85,7 @@ POSITION    target_pos(int s1, int s2);  //input: sensor data, output: target po
 //get the obstalce information, return sensor index that has detects
 //obstacles
 STATUS		initial_map(MAP *map);								//initial map
+STATUS		clear_map(MAP *map);								//clear map
 STATUS		update_map(int sensor[OBS_SENSOR], MAP* map);		//according to the sensor data, construct obstacle distribution map	
 STATUS		initial_vset(COMMAND *set);
 STATE		predictor(POSITION p1, POSITION p2);				//predict the next state for the target

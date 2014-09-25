@@ -372,19 +372,58 @@ COMMAND		find_max(COMMAND *cmd)
 
 STATUS		initial_map(MAP *map)
 {
+	int v = 0, h = 0;
+	int abs_y = 0, abs_x = 0; //reobot frame
 	map->width = MAP_HORIZON;
 	map->height = MAP_VERTICAL;
-	map->grid[MAP_HORIZON][MAP_VERTICAL] = { VACANT };
+	clear_map(map);
+
+	for(v=0; v<MAP_VERTICAL; v++)
+	{
+		for(h=0; h<MAP_HORIZON; h++)
+		{
+			abs_y = fabs( h - MAP_HORIZON/2 + 0.5 ) * GRID_WIDTH;
+			abs_x = (MAP_VERTICAL - v) * GRID_HEIGHT - GRID_HEIGHT/2;
+			map->grid_center[v][h] = sqrt(abs_x * abs_x + abs_y * abs_y);
+			//printf("%4d ", map->grid_center[v][h]);
+		}
+		//printf("\n");
+		
+	}
+	return TRUE;
 }
 
+STATUS		clear_map(MAP *map)
+{
+	int v = 0, h = 0;
+	for(v=0; v<MAP_VERTICAL; v++)
+	{
+		for(h=0; h<MAP_HORIZON; h++)
+		{
+			map->grid[v][h] = VACANT;
+		}
+	}
+	return TRUE;
+}
+
+/*
+input:   all sensor data
+output:  map with obstacle information
+*/
 STATUS		update_map(int sensor[OBS_SENSOR], MAP* map)
 {
-	int width, height, index;
-	float radius;
-	float detect_vision;
-	int w, h, arc;
 
-	initial_map(map);
+	/*
+		1st:	caculate three points: center & 2 heads
+		2nd:	
+	*/
+	POSITION 	header_1, header_2; 	//2 headers 
+	int 	width, height, index;
+	float 	radius;
+	float 	detect_vision;
+	int 	w, h, arc;
+
+	clear_map(map);
 
 	detect_vision = 15.0 /180.0 * PI;
 	for(index=0; index<OBS_SENSOR; index++)
@@ -393,6 +432,6 @@ STATUS		update_map(int sensor[OBS_SENSOR], MAP* map)
 		height = sensor[index] / GRID_HEIGHT;
 		arc = sensor[index] * detect_vision;
 	}
-		
 
 }
+
