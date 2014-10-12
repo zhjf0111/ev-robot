@@ -370,24 +370,35 @@ COMMAND		find_max(COMMAND *cmd)
 	return result;
 }
 
+/* 
+	A map is construct, the frame used in map is graphic frame,
+	that means the grid in the left top of screen is NO.1 and the grid in
+	the right bottom is NO.(m*n).
+
+	Robot is at the center of the bottom of screen. The position set as (0, 0).
+
+	To initial a map is to reset all grid state as vacant and caclulate the center position of 
+	each grid (corresponding to robot frame).
+*/
 STATUS		initial_map(MAP *map)
 {
 	int v = 0, h = 0;
-	int abs_y = 0, abs_x = 0; //reobot frame
-	map->width = MAP_HORIZON;
-	map->height = MAP_VERTICAL;
+	int robot_x = 30, robot_y = 0;
+	int abs_y = 0, abs_x = 0; 	//reobot frame
+	map->width = MAP_HORIZON;	//MAP_HORIZON is 60 grids
+	map->height = MAP_VERTICAL;	//MAP_VERTICAL is 30 grids
 	clear_map(map);
 
 	for(v=0; v<MAP_VERTICAL; v++)
 	{
 		for(h=0; h<MAP_HORIZON; h++)
 		{
-			abs_y = fabs( h - MAP_HORIZON/2 + 0.5 ) * GRID_WIDTH;
-			abs_x = (MAP_VERTICAL - v) * GRID_HEIGHT - GRID_HEIGHT/2;
+			abs_y = fabs( h - MAP_HORIZON/2 + 0.5 ) * GRID_WIDTH;	//caculate y distance to robot position
+			abs_x = (MAP_VERTICAL - v - 0.5) * GRID_HEIGHT;			//caculate x distance to robot position
 			map->grid_center[v][h] = sqrt(abs_x * abs_x + abs_y * abs_y);
-			//printf("%4d ", map->grid_center[v][h]);
+			printf("%4d ", map->grid_center[v][h]);
 		}
-		//printf("\n");
+		printf("\n");
 		
 	}
 	return TRUE;
@@ -419,19 +430,110 @@ STATUS		update_map(int sensor[OBS_SENSOR], MAP* map)
 	*/
 	POSITION 	header_1, header_2; 	//2 headers 
 	int 	width, height, index;
-	float 	radius;
+	float 	radius, cur_theta;
 	float 	detect_vision;
-	int 	w, h, arc;
+	int 	w, h;
 
 	clear_map(map);
 
-	detect_vision = 15.0 /180.0 * PI;
+	detect_vision = 15.0 /180.0 * PI;	
 	for(index=0; index<OBS_SENSOR; index++)
 	{
-		width = sensor[index] / GRID_WIDTH;
-		height = sensor[index] / GRID_HEIGHT;
-		arc = sensor[index] * detect_vision;
+		// theta used here is in common frame rather than robot frame
+		// the right one is the first and the left is the last
+		if( 0 == index )
+		{
+			cur_theta = 0;	
+			header_1.x = sensor[index] * cos(cur_theta);
+			header_1.y = sensor[index] * sin(cur_theta);
+			cur_theta = 7.5 /180.0 * PI;
+			header_2.x = sensor[index] * cos(cur_theta);
+			header_2.y = sensor[index] * sin(cur_theta);
+		}
+		else if( 12 == index )
+		{
+			cur_theta = (180.0 - 7.5)/180.0 * PI;	
+			header_1.x = sensor[index] * cos(cur_theta);
+			header_1.y = sensor[index] * sin(cur_theta);
+			cur_theta = 7.5 /180.0 * PI;
+			header_2.x = sensor[index] * cos(cur_theta);
+			header_2.y = sensor[index] * sin(cur_theta);
+		}
+		else
+		{
+			cur_theta = (15 * index - 7.5)/180.0 * PI;	
+			header_1.x = sensor[index] * cos(cur_theta);
+			header_1.y = sensor[index] * sin(cur_theta);
+			cur_theta = (15 * index + 7.5)/180.0 * PI;
+			header_2.x = sensor[index] * cos(cur_theta);
+			header_2.y = sensor[index] * sin(cur_theta);
+		}
+
+		draw_map(header_1, header_2, sensor[index], map);
 	}
+	return TRUE;
 
 }
 
+//according to sensor data & obstalce data, draw information in map
+void draw_map(POSITION p1, POSITION p2, int radius, MAP* map)
+{
+	int v_min, v_max;  //define v,h in graphic frame to determine the index of grid
+	int h_min, h_max;
+
+	int x_tmp[2], y_tmp[2];
+
+	int ver, hor;
+
+	if(p1.y < 0)	// frame transform: from common xy to graphic grid index
+	{
+		x_tmp[0] = MAP_VERTICAL - p1.x/GRID_HEIGHT -1;
+		y_tmp[0] = p1.y/GRID_WIDTH;
+	}
+	else
+	{
+		x_tmp[0] = MAP_VERTICAL - p1.x/GRID_HEIGHT -1;
+		y_tmp[0] = p1.y/GRID_WIDTH + MAP_HORIZON/2;
+	}
+
+	if(p2.y < 0)	// frame transform: from common xy to graphic grid index
+	{
+		x_tmp[1] = MAP_VERTICAL - p1.x/GRID_HEIGHT -1;
+		y_tmp[1] = p1.y/GRID_WIDTH;
+	}
+	else
+	{
+		x_tmp[1] = MAP_VERTICAL - p1.x/GRID_HEIGHT -1;
+		y_tmp[1] = p1.y/GRID_WIDTH + MAP_HORIZON/2;
+	}
+	//locate the ractange that contains the arc
+	if(x_tmp[0] < x_tmp[1])
+	{
+		v_min = x_tmp[0];
+		v_max = x_tmp[1];
+	}
+	else
+	{
+		v_min = x_tmp[1];
+		v_max = x_tmp[0];
+	}
+	if(y_tmp[0] < y_tmp[1])
+	{
+		h_min = y_tmp[0];
+		h_max = y_tmp[1];
+	}
+	else
+	{
+		h_min = y_tmp[1];
+		h_max = y_tmp[0];
+	}
+	//draw map
+	for(ver=v_min; ver<=v_max; ver++)
+		for(hor=h_min; hor<=h_max; hor++)
+		{
+			// if the (center-radius)<GRID_HEIGHT/2, it is ouccupied
+			if(abs(map->grid_center[ver][hor] - radius) < GRID_HEIGHT/2)
+				map->grid[ver][hor] = OCCUPIED; 
+		}
+
+}

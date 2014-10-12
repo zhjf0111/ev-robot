@@ -87,6 +87,7 @@ POSITION    target_pos(int s1, int s2);  //input: sensor data, output: target po
 STATUS		initial_map(MAP *map);								//initial map
 STATUS		clear_map(MAP *map);								//clear map
 STATUS		update_map(int sensor[OBS_SENSOR], MAP* map);		//according to the sensor data, construct obstacle distribution map	
+void 		draw_map(POSITION p1, POSITION p2, int radius, MAP* map);		//according to sensor data & obstalce data, draw information in map
 STATUS		initial_vset(COMMAND *set);
 STATE		predictor(POSITION p1, POSITION p2);				//predict the next state for the target
 
