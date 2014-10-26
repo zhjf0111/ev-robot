@@ -112,6 +112,7 @@ STATE predictor(POSITION p1, POSITION p2)	//predict the target state: speed and 
 /*
 input: p1 = target last position, p2 = target current position
 		obs = obstacle position
+main optimal algorthm entry
 */
 COMMAND		optimal_vel( POSITION p1, POSITION p2, POSITION obs)
 {
@@ -420,6 +421,7 @@ STATUS		clear_map(MAP *map)
 /*
 input:   all sensor data
 output:  map with obstacle information
+from the map, get obstacle position and target position
 */
 STATUS		update_map(int sensor[OBS_SENSOR], MAP* map)
 {
